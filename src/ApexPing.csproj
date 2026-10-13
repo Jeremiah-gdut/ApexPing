@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>ApexPing</AssemblyName>
+    <Version>0.3.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="../native/hook-helper/build/hook-helper.exe" Link="hook-helper.exe" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../native/hook-helper/LICENSE" Link="licenses/lolPing-MIT.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../assets/native/**/*" Exclude="../assets/native/.gitkeep" Link="assets/native/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

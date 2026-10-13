@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+native/hook-helper/build/
+release/
+assets/native/*
+!assets/native/.gitkeep
+*.user
+.vs/
