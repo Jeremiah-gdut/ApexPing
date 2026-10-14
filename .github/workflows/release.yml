@@ -1,0 +1,117 @@
+name: Windows portable release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Resolve version
+        id: version
+        run: |
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            if ($env:GITHUB_REF_NAME -notmatch '^v(.+)$') { throw 'Expected a version tag starting with v.' }
+            $Matches[1]
+          } else {
+            ([xml](Get-Content src/ApexPing.csproj -Raw)).Project.PropertyGroup.Version
+          }
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$') {
+            throw 'Use a version such as v0.5.0 or v0.5.0-rc.1.'
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "package=ApexPing-$version-win-x64" >> $env:GITHUB_OUTPUT
+
+      - name: Restore native game resources
+        run: |
+          # Resources stay outside Git; pin both the seed release and its SHA256.
+          $seed = Join-Path $env:RUNNER_TEMP 'apex-native-seed'
+          gh release download v0.4.0 --repo Jeremiah-gdut/ApexPing --pattern ApexPing-0.4.0-win-x64.zip --dir $seed
+          if ($LASTEXITCODE -ne 0) { throw 'Could not download native resources.' }
+          $archive = Join-Path $seed 'ApexPing-0.4.0-win-x64.zip'
+          if ((Get-FileHash $archive -Algorithm SHA256).Hash -ne '06838A10E56C0DD10B8AA4B5547FAEC5CED459C43E3F888A1E63D24F7520102C') {
+            throw 'Native resource archive checksum mismatch.'
+          }
+          Expand-Archive -LiteralPath $archive -DestinationPath (Join-Path $seed 'unpacked')
+          Copy-Item -Path (Join-Path $seed 'unpacked/assets/native/*') -Destination assets/native -Recurse
+          if (-not (Test-Path assets/native/manifest.json -PathType Leaf)) { throw 'Missing resource manifest.' }
+
+      - name: Build self-contained Windows app
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: ./build.ps1 -Portable -Version $env:RELEASE_VERSION
+
+      - name: Verify and package
+        env:
+          PACKAGE_NAME: ${{ steps.version.outputs.package }}
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $output = Join-Path $PWD 'release/ApexPing-win-x64'
+          foreach ($required in @('ApexPing.exe', 'hook-helper.exe', 'README.md', 'assets/native/manifest.json', 'licenses/lolPing-MIT.txt', 'licenses/NBitcoin.Secp256k1-MIT.txt')) {
+            if (-not (Test-Path (Join-Path $output $required) -PathType Leaf)) { throw "Missing package file: $required" }
+          }
+          if ((Get-ChildItem $output -Filter *.dll).Count -or (Get-ChildItem $output -Filter *.pdb).Count) {
+            throw 'Expected a single-file runtime without loose DLL/PDB files.'
+          }
+          $productVersion = (Get-Item (Join-Path $output 'ApexPing.exe')).VersionInfo.ProductVersion.Split('+')[0]
+          if ($productVersion -ne $env:RELEASE_VERSION) { throw 'EXE version does not match the tag.' }
+          $zip = Join-Path $PWD "release/$env:PACKAGE_NAME.zip"
+          [IO.Compression.ZipFile]::CreateFromDirectory($output, $zip, [IO.Compression.CompressionLevel]::Optimal, $false)
+          $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $env:PACKAGE_NAME.zip" | Set-Content -LiteralPath "$zip.sha256" -Encoding utf8NoBOM
+
+      - name: Save manual build
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.version.outputs.package }}
+          path: |
+            release/${{ steps.version.outputs.package }}.zip
+            release/${{ steps.version.outputs.package }}.zip.sha256
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Publish tagged release
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          PACKAGE_NAME: ${{ steps.version.outputs.package }}
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release view $env:RELEASE_TAG --json tagName 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $env:RELEASE_TAG --verify-tag --draft --title "ApexPing $env:RELEASE_TAG" --generate-notes
+            if ($LASTEXITCODE -ne 0) { throw 'Could not create release.' }
+          }
+          gh release upload $env:RELEASE_TAG "release/$env:PACKAGE_NAME.zip" "release/$env:PACKAGE_NAME.zip.sha256" --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Could not upload portable package.' }
+          if ($env:RELEASE_VERSION.Contains('-')) {
+            gh release edit $env:RELEASE_TAG --draft=false --prerelease
+          } else {
+            gh release edit $env:RELEASE_TAG --draft=false --prerelease=false --latest
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish release.' }

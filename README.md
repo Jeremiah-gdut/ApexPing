@@ -45,6 +45,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Portable
 
 关闭窗口后继续在托盘运行；点击托盘图标打开设置，右键菜单退出。设置保存于 `%APPDATA%/ApexPing/settings.json`。
 
+设置窗口采用侧栏导航，外观跟随 Windows 的浅色 / 深色主题。轮盘页可以直接移动鼠标选择标记、点击预览。
+
 ### 好友联机
 
 1. 点击设置窗口或托盘菜单中的「好友房间」，填写昵称，在声音设置中选择角色。
@@ -56,6 +58,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Portable
 房间消息端到端加密，房间码仅分享给朋友，不保存到配置，也不会在重启后自动加入。直连双方可知对方连接地址，公共中继可见连接 IP、匿名房间标识与时间。免费节点可能限流或不可用，UDP 打洞不保证成功。
 
 联机同步的是屏幕相对位置；不同视角下，同一标记位置未必对应同一目标。显示器按主屏优先、其余屏幕按位置排序，目标显示器不存在时显示在主屏。
+
+## 自动发布
+
+提交并推送代码后，推送版本标签即可自动编译 Windows x64 免安装包并上传到同名 Release，例如：
+
+```powershell
+git tag v0.5.0
+git push origin v0.5.0
+```
+
+标签决定 EXE 和压缩包的版本号；`v0.5.0-rc.1` 等标签发布为预发布版本。工作流从 v0.4.0 Release 获取原生资源并核对固定 SHA256，请保留该发布包；更新资源时需同步修改工作流中的来源与校验值。Actions 页面也可手动运行构建，只生成下载产物，不发布 Release。
 
 ## 感谢
 
