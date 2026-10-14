@@ -24,5 +24,10 @@
   </Style>
   <Style TargetType="CheckBox"><Setter Property="Foreground" Value="{StaticResource TextBrush}" /><Setter Property="VerticalContentAlignment" Value="Center" /><Setter Property="Margin" Value="0,10,0,0" /></Style>
   <Style TargetType="Slider"><Setter Property="Margin" Value="0,10,0,0" /></Style>
+  <Style TargetType="TextBox">
+   <Setter Property="Background" Value="#11161E" /><Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+   <Setter Property="BorderBrush" Value="#3A4352" /><Setter Property="Padding" Value="9,7" />
+   <Setter Property="VerticalContentAlignment" Value="Center" /><Setter Property="CaretBrush" Value="{StaticResource TextBrush}" />
+  </Style>
  </Application.Resources>
 </Application>

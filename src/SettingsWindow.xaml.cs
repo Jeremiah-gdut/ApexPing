@@ -25,6 +25,9 @@ public partial class SettingsWindow : Window
         VolumeSlider.Value = settings.Volume * 100;
         ScaleSlider.Value = settings.Scale * 100;
         DurationSlider.Value = settings.Duration;
+        PlayerNameBox.Text = settings.PlayerName;
+        RoomInternetBox.IsChecked = settings.AllowInternet;
+        RoomMutedBox.IsChecked = settings.RoomMuted;
         for (int i = 0; i < Pings.All.Length; i++)
         {
             int index = i;
@@ -33,7 +36,7 @@ public partial class SettingsWindow : Window
             PingButtons.Children.Add(button);
         }
         initialized = true;
-        RefreshAssets(); RefreshState(); RefreshLabels();
+        RefreshAssets(); RefreshState(); RefreshLabels(); RefreshRoom();
     }
 
     public void RefreshAssets()
@@ -66,6 +69,18 @@ public partial class SettingsWindow : Window
 
     public void SetStatus(string message) => StatusText.Text = message;
 
+    internal void RefreshRoom(RoomState? state = null)
+    {
+        bool active = owner.Room != null;
+        RoomCreateButton.IsEnabled = RoomJoinButton.IsEnabled = RoomInternetBox.IsEnabled = !active;
+        RoomCopyButton.IsEnabled = RoomLeaveButton.IsEnabled = active;
+        RoomCodeBox.IsReadOnly = active;
+        if (active) RoomCodeBox.Text = owner.Room!.Code;
+        RoomStatus.Text = state == null ? active ? "正在加入房间…" : "尚未加入房间。创建后将房间码发给朋友。"
+            : $"{state.Members.Length}/8 人 · {state.Status}";
+        RoomMembers.ItemsSource = state?.Members;
+    }
+
     private void SettingChanged(object sender, RoutedEventArgs e)
     {
         if (!initialized) return;
@@ -77,8 +92,39 @@ public partial class SettingsWindow : Window
         settings.Scale = ScaleSlider.Value / 100;
         settings.Duration = DurationSlider.Value;
         settings.LegendId = (string)((ComboBoxItem)LegendBox.SelectedItem).Tag;
+        settings.PlayerName = PlayerNameBox.Text;
+        settings.AllowInternet = RoomInternetBox.IsChecked == true;
+        settings.RoomMuted = RoomMutedBox.IsChecked == true;
         RefreshLabels(); owner.SaveSettings();
+        PlayerNameBox.Text = settings.PlayerName;
     }
+
+    private void RoomCreate_Click(object sender, RoutedEventArgs e) => EnterRoom(RoomKeys.CreateCode());
+    internal void FocusRoom()
+    {
+        SettingsScroll.ScrollToVerticalOffset(SettingsScroll.VerticalOffset + RoomCard.TranslatePoint(new Point(0, 0), SettingsScroll).Y - 12);
+        RoomCodeBox.Focus();
+    }
+    private void RoomFocus_Click(object sender, RoutedEventArgs e) => FocusRoom();
+    private void RoomJoin_Click(object sender, RoutedEventArgs e) => EnterRoom(RoomCodeBox.Text);
+    private void EnterRoom(string code)
+    {
+        try
+        {
+            owner.Settings.PlayerName = PlayerNameBox.Text;
+            owner.SaveSettings(); owner.JoinRoom(code);
+        }
+        catch (Exception error) when (error is ArgumentException or InvalidOperationException or System.Net.Sockets.SocketException)
+        { RoomStatus.Text = error.Message; }
+    }
+
+    private void RoomCopy_Click(object sender, RoutedEventArgs e)
+    {
+        if (owner.Room == null) return;
+        try { Clipboard.SetText(owner.Room.Code); RoomStatus.Text = "房间码已复制，将它发给朋友即可。"; }
+        catch (System.Runtime.InteropServices.ExternalException) { RoomStatus.Text = "剪贴板暂时被占用，请稍后重试，或直接选择并复制房间码。"; }
+    }
+    private async void RoomLeave_Click(object sender, RoutedEventArgs e) { RoomLeaveButton.IsEnabled = false; await owner.LeaveRoom(); }
 
     private void RefreshLabels()
     {

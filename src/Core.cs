@@ -193,11 +193,15 @@ public sealed class UserSettings
     public double Duration { get; set; } = 1.5;
     public string? AssetFolder { get; set; }
     public string LegendId { get; set; } = "wraith";
+    public string PlayerName { get; set; } = "玩家";
+    public bool AllowInternet { get; set; } = true;
+    public bool RoomMuted { get; set; }
 
     public void Normalize()
     {
         if (!new[] { "alt", "ctrl", "shift", "mouse4", "mouse5" }.Contains(Trigger)) Trigger = "alt";
         if (LegendId == null || !Regex.IsMatch(LegendId, "^[a-z0-9_]{0,40}$")) LegendId = "wraith";
+        PlayerName = RoomKeys.CleanName(PlayerName);
         Volume = double.IsFinite(Volume) ? Math.Clamp(Volume, 0, 1) : 0.55;
         Scale = double.IsFinite(Scale) ? Math.Clamp(Scale, 0.7, 1.5) : 1;
         Duration = double.IsFinite(Duration) ? Math.Clamp(Duration, 0.6, 3) : 1.5;

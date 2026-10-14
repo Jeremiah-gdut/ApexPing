@@ -3,16 +3,19 @@
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  Title="ApexPing · 桌面战术标记" Width="980" Height="910" MinWidth="820" MinHeight="640"
  WindowStartupLocation="CenterScreen" Background="#101319">
- <ScrollViewer VerticalScrollBarVisibility="Auto" Background="#101319">
+ <ScrollViewer x:Name="SettingsScroll" VerticalScrollBarVisibility="Auto" Background="#101319">
   <Grid Margin="30,24,30,22">
-   <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+   <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
    <Grid Grid.Row="0" Margin="0,0,0,23">
     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
     <StackPanel>
      <StackPanel Orientation="Horizontal"><Border Background="#E45555" Width="4" Margin="0,3,12,3" /><TextBlock Text="APEX PING" FontSize="30" FontWeight="Bold" Foreground="{StaticResource TextBrush}" /><TextBlock Text="DESKTOP" FontSize="11" Foreground="{StaticResource MutedBrush}" Margin="12,16,0,0" /></StackPanel>
      <TextBlock Text="让每个桌面，都成为你的战术地图。" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="16,6,0,0" />
     </StackPanel>
-    <Button x:Name="ToggleButton" Grid.Column="1" Click="Toggle_Click" VerticalAlignment="Center" MinWidth="110" AutomationProperties.Name="启用或暂停桌面标记" />
+    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+     <Button Content="好友房间" Click="RoomFocus_Click" Margin="0,0,8,0" />
+     <Button x:Name="ToggleButton" Click="Toggle_Click" MinWidth="110" AutomationProperties.Name="启用或暂停桌面标记" />
+    </StackPanel>
    </Grid>
    <Grid Grid.Row="1">
     <Grid.ColumnDefinitions><ColumnDefinition Width="1.08*" /><ColumnDefinition Width="20" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
@@ -62,7 +65,33 @@
      </Border>
     </StackPanel>
    </Grid>
-   <Border Grid.Row="2" Background="#181D26" BorderBrush="#2B3240" BorderThickness="1" CornerRadius="10" Padding="20,16" Margin="0,18,0,0">
+   <Border x:Name="RoomCard" Grid.Row="2" Background="#181D26" BorderBrush="#2B3240" BorderThickness="1" CornerRadius="10" Padding="20,18" Margin="0,18,0,0">
+    <StackPanel>
+     <Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="180" /></Grid.ColumnDefinitions>
+      <TextBlock Text="好友房间" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" />
+      <TextBlock Grid.Column="1" Text="昵称" Foreground="{StaticResource MutedBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
+      <TextBox x:Name="PlayerNameBox" Grid.Column="2" MaxLength="32" LostFocus="SettingChanged" AutomationProperties.Name="房间显示昵称" />
+     </Grid>
+     <TextBlock Text="共享桌面标记和角色语音，最多 8 人；位置按各自显示器的分辨率换算。" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,8,0,12" TextWrapping="Wrap" />
+     <Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+      <TextBox x:Name="RoomCodeBox" MaxLength="100" AutomationProperties.Name="APEX 房间码" ToolTip="粘贴朋友分享的 APEX 房间码，或点击创建房间" />
+      <Button x:Name="RoomCreateButton" Grid.Column="1" Content="创建房间" Click="RoomCreate_Click" Margin="8,0,0,0" />
+      <Button x:Name="RoomJoinButton" Grid.Column="2" Content="加入" Click="RoomJoin_Click" Margin="8,0,0,0" />
+      <Button x:Name="RoomCopyButton" Grid.Column="3" Content="复制" Click="RoomCopy_Click" Margin="8,0,0,0" />
+      <Button x:Name="RoomLeaveButton" Grid.Column="4" Content="离开" Click="RoomLeave_Click" Margin="8,0,0,0" />
+     </Grid>
+     <WrapPanel Margin="0,2,0,0">
+      <CheckBox x:Name="RoomInternetBox" Content="允许公网联机（免费公共中继）" Checked="SettingChanged" Unchecked="SettingChanged" Margin="0,10,22,0" />
+      <CheckBox x:Name="RoomMutedBox" Content="屏蔽收到的房间标记与语音" Checked="SettingChanged" Unchecked="SettingChanged" />
+     </WrapPanel>
+     <TextBlock x:Name="RoomStatus" Text="尚未加入房间。创建后将房间码发给朋友。" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,12,0,4" TextWrapping="Wrap" />
+     <ListBox x:Name="RoomMembers" DisplayMemberPath="Label" MaxHeight="150" Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextBrush}" FontSize="12" AutomationProperties.Name="房间成员与连接方式" />
+     <TextBlock Text="优先直连，连接受限时通过公共中继转发。房间码仅分享给朋友；退出后不会自动重连房间。" Foreground="{StaticResource MutedBrush}" FontSize="10" Margin="0,8,0,0" TextWrapping="Wrap" />
+    </StackPanel>
+   </Border>
+   <Border Grid.Row="3" Background="#181D26" BorderBrush="#2B3240" BorderThickness="1" CornerRadius="10" Padding="20,16" Margin="0,18,0,0">
     <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
      <StackPanel>
       <TextBlock Text="游戏原生资源" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
@@ -75,11 +104,11 @@
      </StackPanel>
     </Grid>
    </Border>
-   <Grid Grid.Row="3" Margin="0,17,0,0">
+   <Grid Grid.Row="4" Margin="0,17,0,0">
     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
     <StackPanel>
      <TextBlock x:Name="StatusText" Text="正在启动输入组件…" FontSize="11" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" />
-     <TextBlock Text="关闭窗口后在托盘运行 · 退出请使用托盘菜单  |  v0.3.0" FontSize="10" Foreground="{StaticResource MutedBrush}" Margin="0,5,0,0" />
+     <TextBlock Text="关闭窗口后在托盘运行 · 退出请使用托盘菜单  |  v0.4.0" FontSize="10" Foreground="{StaticResource MutedBrush}" Margin="0,5,0,0" />
     </StackPanel>
     <Button Grid.Column="1" Content="收起到托盘" Click="Hide_Click" Margin="16,0,0,0" />
    </Grid>

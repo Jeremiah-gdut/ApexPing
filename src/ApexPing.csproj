@@ -8,11 +8,15 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>ApexPing</AssemblyName>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="../native/hook-helper/build/hook-helper.exe" Link="hook-helper.exe" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="../native/hook-helper/LICENSE" Link="licenses/lolPing-MIT.txt" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="../assets/native/**/*" Exclude="../assets/native/.gitkeep" Link="assets/native/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../native/hook-helper/build/hook-helper.exe" Link="hook-helper.exe" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <Content Include="../native/hook-helper/LICENSE" Link="licenses/lolPing-MIT.txt" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <Content Include="Network/NBitcoin.Secp256k1.LICENSE" Link="licenses/NBitcoin.Secp256k1-MIT.txt" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <Content Include="../assets/native/**/*" Exclude="../assets/native/.gitkeep" Link="assets/native/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NBitcoin.Secp256k1" Version="4.0.4" />
   </ItemGroup>
 </Project>

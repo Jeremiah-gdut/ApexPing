@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -102,7 +103,7 @@ public sealed class OverlayWindow : Window
         wheel = null;
     }
 
-    public void Ping(int index, int x, int y, UserSettings settings)
+    public void Ping(int index, int x, int y, UserSettings settings, string? sender = null)
     {
         var point = PointFromScreen(new Point(x, y));
         var ping = Pings.All[index];
@@ -114,7 +115,8 @@ public sealed class OverlayWindow : Window
         marker.Children.Add(view);
         var label = new TextBlock
         {
-            Text = ping.Label, Foreground = new SolidColorBrush(color), FontSize = 12,
+            Text = sender == null ? ping.Label : ping.Label + " · " + sender, Foreground = new SolidColorBrush(color), FontSize = 12,
+            TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 150,
             FontFamily = new FontFamily("Microsoft YaHei UI"), Background = new SolidColorBrush(Color.FromArgb(220, 12, 15, 20)),
             Padding = new Thickness(8, 3, 8, 3), HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, 3)
@@ -126,6 +128,17 @@ public sealed class OverlayWindow : Window
         markers.Add((marker, view, label, animationClock.Elapsed.TotalSeconds, settings.Duration));
         if (markers.Count > 12) { canvas.Children.Remove(markers[0].Element); markers.RemoveAt(0); }
         StartRendering();
+    }
+
+    public bool CoveredByFullscreenApp()
+    {
+        nint foreground = GetForegroundWindow();
+        if (foreground == nint.Zero || foreground == GetShellWindow() || !GetWindowRect(foreground, out var rect)) return false;
+        var className = new StringBuilder(64);
+        GetClassName(foreground, className, className.Capacity);
+        if (className.ToString() is "Progman" or "WorkerW" or "Shell_TrayWnd") return false;
+        var bounds = screen.Bounds;
+        return rect.Left <= bounds.Left && rect.Top <= bounds.Top && rect.Right >= bounds.Right && rect.Bottom >= bounds.Bottom;
     }
 
     private void StartRendering()
@@ -174,4 +187,9 @@ public sealed class OverlayWindow : Window
     [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")] private static extern nint GetWindowLongPtr(nint handle, int index);
     [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")] private static extern nint SetWindowLongPtr(nint handle, int index, nint value);
     [DllImport("user32.dll")] private static extern bool SetWindowPos(nint handle, nint insertAfter, int x, int y, int width, int height, uint flags);
+    [StructLayout(LayoutKind.Sequential)] private struct WindowRect { public int Left, Top, Right, Bottom; }
+    [DllImport("user32.dll")] private static extern nint GetForegroundWindow();
+    [DllImport("user32.dll")] private static extern nint GetShellWindow();
+    [DllImport("user32.dll")] private static extern bool GetWindowRect(nint handle, out WindowRect rect);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetClassName(nint handle, StringBuilder name, int capacity);
 }
