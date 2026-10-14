@@ -61,7 +61,6 @@ public partial class SettingsWindow : Window
         wheel = new WheelView(owner.Assets, owner.Images) { Width = 340, Height = 340, Preview = true };
         WheelHost.Content = wheel;
         var assets = owner.Assets;
-        BrandIcon.Source = owner.Images.GetColored(assets.PathFor("go", true), (Color)ColorConverter.ConvertFromString(assets.ColorFor("go")));
         for (int i = 0; i < Pings.All.Length; i++)
             ((Image)((StackPanel)((Button)PingButtons.Children[i]).Content).Children[0]).Source = owner.Images.GetColored(assets.PathFor(Pings.All[i].Id, true), (Color)ColorConverter.ConvertFromString(assets.ColorFor(Pings.All[i].Id)));
         SelectPreview(previewIndex);

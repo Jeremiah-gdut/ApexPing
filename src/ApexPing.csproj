@@ -7,10 +7,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/app.ico</ApplicationIcon>
     <AssemblyName>ApexPing</AssemblyName>
     <Version>0.4.0</Version>
   </PropertyGroup>
   <ItemGroup>
+    <Resource Include="Assets/app.ico" />
+    <Resource Include="Assets/app.png" />
     <Content Include="../native/hook-helper/build/hook-helper.exe" Link="hook-helper.exe" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
     <Content Include="../native/hook-helper/LICENSE" Link="licenses/lolPing-MIT.txt" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
     <Content Include="Network/NBitcoin.Secp256k1.LICENSE" Link="licenses/NBitcoin.Secp256k1-MIT.txt" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />

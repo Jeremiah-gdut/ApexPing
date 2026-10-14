@@ -29,6 +29,7 @@ public partial class App : Application
     private OverlayWindow? wheelOwner;
     private SettingsWindow? settingsWindow;
     private Forms.NotifyIcon? tray;
+    private System.Drawing.Icon? trayIcon;
     private Mutex? instance;
     private int anchorX, anchorY;
 
@@ -64,7 +65,10 @@ public partial class App : Application
         menu.Items.Add("启用 / 暂停   Ctrl+Alt+P", null, (_, _) => Dispatcher.Invoke(Toggle));
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("退出 ApexPing", null, (_, _) => Dispatcher.Invoke(Quit));
-        tray = new Forms.NotifyIcon { Text = "ApexPing · Alt + 左键拖动标记", Icon = System.Drawing.SystemIcons.Application, ContextMenuStrip = menu, Visible = true };
+        using var iconStream = GetResourceStream(new Uri("pack://application:,,,/ApexPing;component/Assets/app.ico")).Stream;
+        using var icon = new System.Drawing.Icon(iconStream, Forms.SystemInformation.SmallIconSize);
+        trayIcon = (System.Drawing.Icon)icon.Clone();
+        tray = new Forms.NotifyIcon { Text = "ApexPing · Alt + 左键拖动标记", Icon = trayIcon, ContextMenuStrip = menu, Visible = true };
         tray.MouseClick += (_, args) => { if (args.Button == Forms.MouseButtons.Left) Dispatcher.Invoke(ShowSettings); };
     }
 
@@ -260,7 +264,7 @@ public partial class App : Application
     {
         Quitting = true; SystemEvents.DisplaySettingsChanged -= DisplayChanged;
         Room?.Dispose(); Room = null;
-        input?.Dispose(); StopSpeech(); foreach (var player in players.ToArray()) player.Close(); players.Clear(); tray?.Dispose();
+        input?.Dispose(); StopSpeech(); foreach (var player in players.ToArray()) player.Close(); players.Clear(); tray?.Dispose(); trayIcon?.Dispose();
         foreach (var window in overlays) window.Close();
         instance?.Dispose(); base.OnExit(e);
     }

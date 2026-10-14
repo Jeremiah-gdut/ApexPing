@@ -75,3 +75,4 @@ git push origin v0.5.0
 - [lolPing](https://github.com/darrenprx/lolPing)：项目灵感、房间通信思路与 Windows 输入组件，随源码及发布包保留 MIT 声明。
 - [NBitcoin.Secp256k1](https://github.com/MetacoSA/NBitcoin)：Nostr 消息签名与验证，随发布包保留 MIT 声明。
 - [RSX](https://github.com/r-ex/rsx)：原生资源提取工具。
+- 应用图标参考 [死亡箱图案](https://www.pikpng.com/pngvi/iTmoJii_png-file-apex-legends-death-box-clipart/)，经去底与配色调整；并非游戏解包原图或官方应用标识。

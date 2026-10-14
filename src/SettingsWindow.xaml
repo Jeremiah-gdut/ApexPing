@@ -1,7 +1,7 @@
 <Window x:Class="ApexPing.SettingsWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- Title="ApexPing" Width="1120" Height="820" MinWidth="940" MinHeight="620"
+ Title="ApexPing" Icon="Assets/app.ico" Width="1120" Height="820" MinWidth="940" MinHeight="620"
  WindowStartupLocation="CenterScreen" TextOptions.TextFormattingMode="Display" Style="{StaticResource {x:Type Window}}">
  <Grid>
   <Grid.ColumnDefinitions><ColumnDefinition Width="220" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
@@ -9,9 +9,7 @@
    <Grid>
     <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
     <StackPanel Orientation="Horizontal" Margin="22,28,16,28">
-     <Border Width="42" Height="42" Background="{DynamicResource SurfaceBrush}" CornerRadius="10" Margin="0,0,12,0">
-      <Image x:Name="BrandIcon" Width="25" Height="25" RenderOptions.BitmapScalingMode="HighQuality" />
-     </Border>
+     <Image x:Name="BrandIcon" Source="Assets/app.png" Width="42" Height="42" Margin="0,0,12,0" RenderOptions.BitmapScalingMode="HighQuality" />
      <StackPanel VerticalAlignment="Center"><TextBlock Text="ApexPing" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="桌面战术标记" Style="{StaticResource Description}" /></StackPanel>
     </StackPanel>
     <StackPanel Grid.Row="1">
